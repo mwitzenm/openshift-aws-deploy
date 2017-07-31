@@ -1,0 +1,14 @@
+---
+# This playbook checks pre-requisites on the ansible host,
+# creates the AWS SSH keypair if necessary, and runs a
+# CloudFormation stack to create the infrastructure.
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  become: no
+  vars_files:
+  - vars/main.yaml
+  roles:
+  - validate-ansible-host-prereqs
+  - { role: deploy-ec2-keypair, when: create_key == "yes" }
+  - create-cloudformation-stack
