@@ -706,7 +706,7 @@
         "Scheme": "internal",
         "SecurityGroups": [ { "Ref": "MasterIntElbSG" } ],
         "Subnets": [
-          {"Ref": "PrivateSubnet1"},
+          {"Ref": "PrivateSubnet1"}
             ],
         "Instances": [
           {"Ref": "Master01"},
