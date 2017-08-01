@@ -2,7 +2,7 @@
 This repository contains scripts for deploying an OpenShift Container Platform cluster to a single AWS AZ. It borrows heavily from the official Red Hat [OpenShift AWS Reference Architecture](https://github.com/openshift/openshift-ansible-contrib/tree/master/reference-architecture/aws-ansible).
 
 ## Overview
-The Ansible playbooks here use the the [cloudformation modules](http://docs.ansible.com/ansible/latest/cloudformation_module.html) to spin up all of the required AWS infrastructure and then leverage the official [OpenShift playbooks](https://github.com/openshift/openshift-ansible/tree/release-1.5/playbooks/byo) provided by Red Hat to do the installation. This method will deploy 3 Masters, 3 infrastructure nodes, and 2 applcation nodes to a single AWS availability zone.
+The Ansible playbooks here use [cloudformation modules](http://docs.ansible.com/ansible/latest/cloudformation_module.html) to spin up all of the required AWS infrastructure and then leverage the official [OpenShift playbooks](https://github.com/openshift/openshift-ansible/tree/release-1.5/playbooks/byo) provided by Red Hat to do the installation. This method will deploy 3 Masters, 3 infrastructure nodes, and 2 applcation nodes to a single AWS availability zone. You can find the cloudformation template at [playbooks/roles/create-cloudformation-stack/files](playbooks/roles/create-cloudformation-stack/files).
 
 The biggest difference between this repository and the official reference architecture is the use of a single availability zone and no default identity provider.
 
