@@ -1,6 +1,4 @@
 ---
-# Store cloudformation data and
-# add infrastructure to ansible host groups
 - hosts: localhost
   connection: local
   gather_facts: yes
@@ -10,8 +8,7 @@
   roles:
   - get-cfn-stack-outputs
   - add-infra-to-host-groups
-
-# Wait for bastion to come up
+  
 - hosts: localhost
   connection: local
   gather_facts: no
