@@ -1,19 +1,17 @@
-# OpenShift on Amazon Web Services
+# OpenShift 3.5 on Amazon Web Services
 This repository contains scripts for deploying an OpenShift Container Platform cluster to a single AWS AZ. It borrows heavily from the official [Red Hat OpenShift AWS Reference Architecture](https://github.com/openshift/openshift-ansible-contrib/tree/master/reference-architecture/aws-ansible).
 
-The biggest difference between this repository and the official reference architecture is that this repository only deploys a
-This repository contains the scripts used to deploy an OpenShift Container Platform or OpenShift Origin environment based off of the Reference Architecture Guide for OCP 3.5 on Amazon Web Services.
-
 ## Overview
-The repository contains Ansible playbooks which deploy 3 Masters in different availability zones, 3 infrastructure nodes and 2 applcation nodes. The Infrastrucute and Application nodes are split between availbility zones.  The playbooks deploy a Docker registry and scale the router to the number of Infrastruture nodes.
+The repository contains Ansible playbooks which deploy 3 Masters, 3 infrastructure nodes, and 2 applcation nodes to a single AWS availability zone. These scripts only currently support OpenShift 3.5. The playbooks deploy a Docker registry and scale the router to the number of Infrastruture nodes.
 
-![Architecture](images/arch.jpg)
+The biggest difference between this repository and the official reference architecture is the use of a single availability zone and no default identity provider.
 
 ## Prerequisites
 A registered domain must be added to Route53 as a Hosted Zone before installation.  This registered domain can be purchased through AWS.
 
-### Deploying OpenShift Container Platform
-The code in this repository handles all of the AWS specific components except for the installation of OpenShift. We rely on the OpenShift playbooks from the openshift-ansible-playbooks rpm. You will need the rpm installed on the workstation before using ose-on-aws.py. Do not perform the following within a container as errors have been found when attempting to run subscription-manager. It is advised to use a VM or bare metal installation of RHEL.
+
+### Deployment of OpenShift Enterprise
+The code in this repository leverages the Ansible cloudformation modules to spin up all of the required AWS infrastructure. It then relies on the official OpenShift playbooks from the atomic-openshift-utils rpm provided by Red Hat. It is assumed you are running the following from a RHEL box.
 
 ```
 $ subscription-manager repos --enable rhel-7-server-optional-rpms
@@ -31,33 +29,17 @@ $ yum -y install python2-boto \
                  python-httplib2
 ```
 
-### Deploying OpenShift Origin
-The playbooks in the repository also have the ability to configure CentOS or RHEL instances to prepare for the installation of Origin. Due to the OpenShift playbooks not being available in RPM format outside of a OpenShift Container Platform subscription the openshift-ansible repository must be cloned. At this time, the following cannot be performed within a container due to known issues that have been found while running openshift-ansible in a container. It is advised to use a virtual or bare metal machine.
-
-```
-$ rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-$ yum -y install python-pip git python2-boto \
-                 python-netaddr python-httplib2 python-devel \
-                 gcc libffi-devel openssl-devel python2-boto3 \
-                 python-click python-six pyOpenSSL
-$ pip install git+https://github.com/ansible/ansible.git@stable-2.2
-$ mkdir -p /usr/share/ansible/openshift-ansible
-$ git clone https://github.com/openshift/openshift-ansible.git /usr/share/ansible/openshift-ansible
-```
-
-## Usage
-It is advised to not run the ose-on-aws.py from a container. The ose-on-aws.py script will launch infrastructure and flow straight into installing the OpenShift application and components.
-
 ### Before Launching the Ansible script
 Due to the installations use of a bastion server the ssh config must be modified.
+You should replace ```*.domain.com``` and ```bastion.domain.com``` with your own domain name that is configured in Route 53.
 ```
 $ vim /home/user/.ssh/config
-Host *.sysdeseng.com
+Host *.domain.com
      ProxyCommand               ssh ec2-user@bastion -W %h:%p
      IdentityFile               /path/to/ssh/key
 
 Host bastion
-     Hostname                   bastion.sysdeseng.com
+     Hostname                   bastion.domain.com
      user                       ec2-user
      StrictHostKeyChecking      no
      ProxyCommand               none
@@ -74,14 +56,11 @@ export AWS_ACCESS_KEY_ID=foo
 export AWS_SECRET_ACCESS_KEY=bar
 ```
 
-### GitHub Authentication
-GitHub authentication is the default authentication mechanism used for this reference architecture. GitHub authentication requires an OAuth application to be created. The values should reflect the hosted zone defined in Route53 for example the Homepage URL would be https://openshift-master.sysdeseng.com and Authorization callback URL is https://openshift-master.sysdeseng.com/oauth2callback/github.
-
 ### Region
-The default region is us-east-1 but can be changed when running the ose-on-aws script by specifying --region=us-west-2 for example. The region must contain at least 3 Availability Zones.
+The default region is us-east-1 but can be changed when running the deploy-cluster.py script by specifying --region=us-west-2 for example.
 
 ### AMI ID
-The AMI ID may need to change if the AWS IAM account does not have access to the Red Hat Cloud Access gold image, another OS such as CentOS is deployed, or if deploying outside of the us-east-1 region.
+The AMI ID may need to change if the AWS IAM account does not have access to the Red Hat Cloud Access gold image. You can follow steps [here](https://access.redhat.com/articles/2962171) for details on the Red Hat Cloud Access gold image.
 
 ### Containerized Installation
 Specifying the configuration trigger --containerized=true will install and run OpenShift services in containers. Both Atomic Host and RHEL can run OpenShift in containers. When using Atomic Host the version of docker must be 1.10 or greater and the configuration trigger --containerized=true must be used or OpenShift will not operate as expected.
@@ -97,12 +76,6 @@ When installing into an new AWS environment perform the following.   This will c
 --github-organization=RHSyseng --github-client-id=3a30415d84720ad14abc --deploy-openshift-metrics=true
 
 ```
-**OpenShift Origin**
-```
-./ose-on-aws.py --keypair=OSE-key --create-key=yes --key-path=/path/to/ssh/key.pub --public-hosted-zone=sysdeseng.com \
---deployment-type=origin --ami=ami-6d1c2007 --github-client-secret=47a0c41f0295b451834675ed78aecfb7876905f9 \
---github-organization=openshift --github-organization=RHSyseng --github-client-id=3a30415d84720ad14abc
-```
 
 If the SSH key that you plan on using in AWS already exists then perform the following.
 
@@ -112,13 +85,6 @@ If the SSH key that you plan on using in AWS already exists then perform the fol
 
 ```
 
-**OpenShift Origin**
-```
-./ose-on-aws.py --keypair=OSE-key --public-hosted-zone=sysdeseng.com --deployment-type=origin --ami=ami-6d1c2007 \
---github-client-secret=47a0c41f0295b451834675ed78aecfb7876905f9 --github-organization=openshift \
---github-organization=RHSyseng --github-client-id=3a30415d84720ad14abc
-```
-
 ### Existing AWS Environment (Brownfield)
 If installing OpenShift Container Platform or OpenShift Origin into an existing AWS VPC perform the following. The script will prompt for vpc and subnet IDs.  The Brownfield deployment can also skip the creation of a Bastion server if one already exists. For mappings of security groups make sure the bastion security group is named bastion-sg.
 
@@ -126,14 +92,6 @@ If installing OpenShift Container Platform or OpenShift Origin into an existing 
 ```
 ./ose-on-aws.py --create-vpc=no --byo-bastion=yes --keypair=OSE-key --rhsm-user=rh-user --rhsm-password=password \
 --public-hosted-zone=sysdeseng.com --rhsm-pool="Red Hat OpenShift Container Platform, Standard, 2-Core" --bastion-sg=sg-a32fa3 \
---github-client-secret=47a0c41f0295b451834675ed78aecfb7876905f9 --github-organization=openshift \
---github-organization=RHSyseng --github-client-id=3a30415d84720ad14abc
-```
-
-**OpenShift Origin**
-```
-./ose-on-aws.py --create-vpc=no --byo-bastion=yes --keypair=OSE-key --public-hosted-zone=sysdeseng.com \
---deployment-type=origin --ami=ami-6d1c2007 --bastion-sg=sg-a32fa3 \
 --github-client-secret=47a0c41f0295b451834675ed78aecfb7876905f9 --github-organization=openshift \
 --github-organization=RHSyseng --github-client-id=3a30415d84720ad14abc
 ```
@@ -148,14 +106,6 @@ The same greenfield and brownfield deployment steps can be used to launch anothe
 --stack-name=prod --github-client-secret=47a0c41f0295b451834675ed78aecfb7876905f9 --github-organization=openshift \
 --github-organization=RHSyseng --github-client-id=3a30415d84720ad14abc
 ```
-
-**OpenShift Origin**
-```
-./ose-on-aws.py --keypair=OSE-key --public-hosted-zone=sysdeseng.com --deployment-type=origin --ami=ami-6d1c2007 \
---stack-name=prod --github-client-secret=47a0c41f0295b451834675ed78aecfb7876905f9 --github-organization=openshift \
---github-organization=RHSyseng --github-client-id=3a30415d84720ad14abc
-```
-
 
 ## Adding nodes 
 Adding nodes can be done by performing the following. The configuration option --node-type allows for the creation of application or
@@ -173,19 +123,6 @@ $ ./add-node.py --existing-stack=dev --rhsm-user=rhsm-user --rhsm-password=passw
 --public-hosted-zone=sysdeseng.com --keypair=OSE-key --rhsm-pool="Red Hat OpenShift Container Platform, Premium, 2-Core"
 --use-cloudformation-facts --shortname=ose-infra-node04 --node-type=infra --subnet-id=subnet-0a962f4
 ```
-
-If the Reference Architecture deployment was performed before 3.5.
-
-```
-$ ./add-node.py --rhsm-user=user --rhsm-password=password --public-hosted-zone=sysdeseng.com
---keypair=OSE-key --rhsm-pool="Red Hat OpenShift Container Platform, Premium, 2-Core" --node-type=infra
---iam-role=OpenShift-Infra-NodeInstanceProfile-TNAGMYGY9W8K --node-sg=sg-309f9a4a --infra-sg=sg-289f9a52
---shortname=ose-infra-node04 --subnet-id=subnet-0a962f4 --infra-elb-name=OpenShift-InfraElb-1N0DZ3CFCAHLV
-```
-
-## Gluster Storage
-If there is a desire to use CNS or Gluster storage for OpenShift visit the link below
-https://access.redhat.com/documentation/en-us/reference_architectures/2017/html/deploying_openshift_container_platform_3_on_amazon_web_services/#persistent_storage
 
 ## Teardown
 
