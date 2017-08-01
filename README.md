@@ -31,7 +31,7 @@ $ git clone https://github.com/nccurry/openshift-aws-deploy.git
 
 ### Modify SSH Config
 Due to the installations use of a bastion server the ssh config must be modified.
-You should replace ```*.domain.com``` and ```bastion.domain.com``` with your own domain name that is configured in Route 53.
+You should replace ```*.domain.com``` and ```bastion.domain.com``` with your own domain name that is configured in Route 53 and point the config at the ssh key you intend to use.
 ```
 $ vim /home/user/.ssh/config
 Host *.domain.com
@@ -121,10 +121,10 @@ Options:
 #### Region
 The default region is us-east-1 but can be changed when running the deploy-cluster.py script by specifying --region=us-west-2 for example.
 
-### AMI ID
+#### AMI ID
 The AMI ID may need to change if the AWS IAM account does not have access to the Red Hat Cloud Access gold image. You can follow steps [here](https://access.redhat.com/articles/2962171) for details on the Red Hat Cloud Access gold image.
 
-### Containerized Installation
+#### Containerized Installation
 Specifying the configuration trigger --containerized=true will install and run OpenShift services in containers. Both Atomic Host and RHEL can run OpenShift in containers. When using Atomic Host the version of docker must be 1.10 or greater and the configuration trigger --containerized=true must be used or OpenShift will not operate as expected.
 
 ## Deploy Cluster
@@ -144,5 +144,4 @@ $ ./deploy-cluster.py \
   --rhsm-user='rh-user' \
   --rhsm-password='password' \
   --rhsm-pool='Red Hat OpenShift Container Platform, Standard, 2-Core'
-
 ```

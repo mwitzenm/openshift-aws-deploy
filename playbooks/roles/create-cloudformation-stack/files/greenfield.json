@@ -210,74 +210,38 @@
          "NatGatewayId" : { "Ref" : "Nat" }
       }
      },
-    "PublicSubnet1": {
+    "PublicSubnet": {
       "Type": "AWS::EC2::Subnet",
       "DependsOn": ["Vpc"],
       "Properties": {
         "AvailabilityZone": { "Ref" : "AvailabilityZone" },
         "CidrBlock": {"Fn::Select": ["0", {"Ref": "SubnetCidrBlocks"}]},
-        "Tags": [ {"Key": "Name", "Value": "Public_Subnet_1"} ],
+        "Tags": [ {"Key": "Name", "Value": "Public_Subnet"} ],
         "MapPublicIpOnLaunch": "true",
         "VpcId": { "Ref": "Vpc" }
       }
     },
-    "PublicSubnet1RTA": {
+    "PublicSubnetRTA": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "RouteTableId": { "Ref": "VpcRouteTable" },
-        "SubnetId": { "Ref": "PublicSubnet1" }
+        "SubnetId": { "Ref": "PublicSubnet" }
       }
     },
-    "PublicSubnet2": {
-      "Type": "AWS::EC2::Subnet",
-      "DependsOn": ["Vpc"],
-      "Properties": {
-        "AvailabilityZone": { "Ref" : "AvailabilityZone" },
-        "CidrBlock": {"Fn::Select": ["1", {"Ref": "SubnetCidrBlocks"}]},
-        "Tags": [ {"Key": "Name", "Value": "Public_Subnet_2"} ],
-        "MapPublicIpOnLaunch": "true",
-        "VpcId": { "Ref": "Vpc" }
-      }
-    },
-    "PublicSubnet2RTA": {
-      "Type": "AWS::EC2::SubnetRouteTableAssociation",
-      "Properties": {
-        "RouteTableId": { "Ref": "VpcRouteTable" },
-        "SubnetId": { "Ref": "PublicSubnet2" }
-      }
-    },
-    "PublicSubnet3": {
-      "Type": "AWS::EC2::Subnet",
-      "DependsOn": ["Vpc"],
-      "Properties": {
-        "AvailabilityZone": { "Ref" : "AvailabilityZone" },
-        "CidrBlock": {"Fn::Select": ["2", {"Ref": "SubnetCidrBlocks"}]},
-        "Tags": [ {"Key": "Name", "Value": "Public_Subnet_3"} ],
-        "MapPublicIpOnLaunch": "true",
-        "VpcId": { "Ref": "Vpc" }
-      }
-    },
-    "PublicSubnet3RTA": {
-      "Type": "AWS::EC2::SubnetRouteTableAssociation",
-      "Properties": {
-        "RouteTableId": { "Ref": "VpcRouteTable" },
-        "SubnetId": { "Ref": "PublicSubnet3" }
-      }
-    },
-    "PrivateSubnet1": {
+    "PrivateSubnet": {
       "DependsOn": ["Nat"],
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "AvailabilityZone": { "Ref" : "AvailabilityZone" },
-        "CidrBlock": {"Fn::Select": ["3", {"Ref": "SubnetCidrBlocks"}]},
-        "Tags": [ {"Key": "Name", "Value": "Private_Subnet_1"} ],
+        "CidrBlock": {"Fn::Select": ["1", {"Ref": "SubnetCidrBlocks"}]},
+        "Tags": [ {"Key": "Name", "Value": "Private_Subnet"} ],
         "VpcId": { "Ref": "Vpc" }
       }
     },
-    "PrivateSubnet1RTA" : {
+    "PrivateSubnetRTA" : {
       "Type" : "AWS::EC2::SubnetRouteTableAssociation",
       "Properties" : {
-         "SubnetId" : { "Ref" : "PrivateSubnet1" },
+         "SubnetId" : { "Ref" : "PrivateSubnet" },
          "RouteTableId" : { "Ref" : "PrivateRouteTable" }
       }
     },
@@ -286,7 +250,7 @@
       "Type" : "AWS::EC2::NatGateway",
       "Properties" : {
           "AllocationId" : { "Fn::GetAtt" : ["EIP", "AllocationId"]},
-          "SubnetId" : { "Ref" : "PublicSubnet1"}
+          "SubnetId" : { "Ref" : "PublicSubnet"}
       }
     },
     "EIP" : {
@@ -706,7 +670,7 @@
         "Scheme": "internal",
         "SecurityGroups": [ { "Ref": "MasterIntElbSG" } ],
         "Subnets": [
-          {"Ref": "PrivateSubnet1"}
+          {"Ref": "PrivateSubnet"}
             ],
         "Instances": [
           {"Ref": "Master01"},
@@ -738,7 +702,7 @@
         ],
         "SecurityGroups": [{"Ref": "MasterExtElbSG"}],
         "Subnets": [
-          {"Ref": "PublicSubnet2"}
+          {"Ref": "PublicSubnet"}
             ],
         "Instances": [
           {"Ref": "Master01"},
@@ -775,7 +739,7 @@
         ],
         "SecurityGroups": [ { "Ref": "InfraElbSG" } ],
         "Subnets": [
-          {"Ref": "PublicSubnet3"}
+          {"Ref": "PublicSubnet"}
         	],
         "Instances": [
           {"Ref": "InfraNode01"},
@@ -974,7 +938,7 @@
           "KeyName" : {"Ref": "KeyName"},
 	  "InstanceType": {"Ref": "BastionInstanceType"},
           "SecurityGroupIds": [{ "Fn::GetAtt" : ["BastionSg", "GroupId"] }],
-          "SubnetId" : {"Ref": "PublicSubnet1"},
+          "SubnetId" : {"Ref": "PublicSubnet"},
           "Tags": [
             { "Key": "Name",
               "Value": {"Fn::Join": [".", ["bastion",{"Ref": "PublicHostedZone"}]]}
@@ -1015,7 +979,7 @@
           "KeyName" : {"Ref": "KeyName"},
 	      "InstanceType": {"Ref": "MasterInstanceType"},
 		  "SecurityGroupIds": [{ "Fn::GetAtt" : ["NodeSG", "GroupId"] }, { "Fn::GetAtt" : ["MasterSG", "GroupId"] }, { "Fn::GetAtt" : ["EtcdSG", "GroupId"] }],
-          "SubnetId" : {"Ref": "PrivateSubnet1"},
+          "SubnetId" : {"Ref": "PrivateSubnet"},
           "IamInstanceProfile": { "Ref": "MasterInstanceProfile" },
           "Tags": [
             { "Key": "Name",
@@ -1070,7 +1034,7 @@
           "KeyName" : {"Ref": "KeyName"},
           "InstanceType": {"Ref": "MasterInstanceType"},
           "SecurityGroupIds": [{ "Fn::GetAtt" : ["NodeSG", "GroupId"] }, { "Fn::GetAtt" : ["MasterSG", "GroupId"] }, { "Fn::GetAtt" : ["EtcdSG", "GroupId"] }],
-          "SubnetId" : {"Ref": "PrivateSubnet1"},
+          "SubnetId" : {"Ref": "PrivateSubnet"},
           "IamInstanceProfile": { "Ref": "MasterInstanceProfile" },
           "Tags": [
             { "Key": "Name",
@@ -1125,7 +1089,7 @@
           "KeyName" : {"Ref": "KeyName"},
 	  "InstanceType": {"Ref": "MasterInstanceType"},
 	  "SecurityGroupIds": [{ "Fn::GetAtt" : ["NodeSG", "GroupId"] }, { "Fn::GetAtt" : ["MasterSG", "GroupId"] }, { "Fn::GetAtt" : ["EtcdSG", "GroupId"] }],
-          "SubnetId" : {"Ref": "PrivateSubnet1"},
+          "SubnetId" : {"Ref": "PrivateSubnet"},
           "IamInstanceProfile": { "Ref": "MasterInstanceProfile" },
           "Tags": [
             { "Key": "Name",
@@ -1180,7 +1144,7 @@
           "KeyName" : {"Ref": "KeyName"},
 	  "InstanceType": {"Ref": "InfraInstanceType"},
           "SecurityGroupIds": [{ "Fn::GetAtt" : ["NodeSG", "GroupId"] }, { "Fn::GetAtt" : ["InfraSG", "GroupId"] }],
-          "SubnetId" : {"Ref": "PrivateSubnet1"},
+          "SubnetId" : {"Ref": "PrivateSubnet"},
           "IamInstanceProfile": { "Ref": "NodeInstanceProfile" },
           "Tags": [
             { "Key": "Name",
@@ -1227,7 +1191,7 @@
           "KeyName" : {"Ref": "KeyName"},
           "InstanceType": {"Ref": "InfraInstanceType"},
           "SecurityGroupIds": [{ "Fn::GetAtt" : ["NodeSG", "GroupId"] }, { "Fn::GetAtt" : ["InfraSG", "GroupId"] }],
-          "SubnetId" : {"Ref": "PrivateSubnet1"},
+          "SubnetId" : {"Ref": "PrivateSubnet"},
           "IamInstanceProfile": { "Ref": "NodeInstanceProfile" },
           "Tags": [
             { "Key": "Name",
@@ -1274,7 +1238,7 @@
           "KeyName" : {"Ref": "KeyName"},
           "InstanceType": {"Ref": "InfraInstanceType"},
           "SecurityGroupIds": [{ "Fn::GetAtt" : ["NodeSG", "GroupId"] }, { "Fn::GetAtt" : ["InfraSG", "GroupId"] }],
-          "SubnetId" : {"Ref": "PrivateSubnet1"},
+          "SubnetId" : {"Ref": "PrivateSubnet"},
           "IamInstanceProfile": { "Ref": "NodeInstanceProfile" },
           "Tags": [
             { "Key": "Name",
@@ -1321,7 +1285,7 @@
           "KeyName" : {"Ref": "KeyName"},
           "InstanceType": {"Ref": "AppNodeInstanceType"},
           "SecurityGroupIds": [{ "Fn::GetAtt" : ["NodeSG", "GroupId"] }],
-          "SubnetId" : {"Ref": "PrivateSubnet1"},
+          "SubnetId" : {"Ref": "PrivateSubnet"},
           "IamInstanceProfile": { "Ref": "NodeInstanceProfile" },
           "Tags": [
             { "Key": "Name",
@@ -1368,7 +1332,7 @@
           "KeyName" : {"Ref": "KeyName"},
           "InstanceType": {"Ref": "AppNodeInstanceType"},
 	  "SecurityGroupIds": [{ "Fn::GetAtt" : ["NodeSG", "GroupId"] }],
-          "SubnetId" : {"Ref": "PrivateSubnet1"},
+          "SubnetId" : {"Ref": "PrivateSubnet"},
 	  "IamInstanceProfile": { "Ref": "NodeInstanceProfile" },
           "Tags": [
             { "Key": "Name",
@@ -1440,8 +1404,8 @@
       "Value" : { "Ref" : "InfraElb" },
       "Description" : "Infrastructure ELB name"
     },
-    "PrivateSubnet1" : {
-      "Value" : { "Ref" : "PrivateSubnet1" },
+    "PrivateSubnet" : {
+      "Value" : { "Ref" : "PrivateSubnet" },
       "Description" : "Private Subnet 1"
     },
     "NodeSGId" : {
