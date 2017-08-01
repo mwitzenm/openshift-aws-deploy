@@ -18,6 +18,6 @@
   roles:
   - wait-for-bastion
 
-#- include: aws-prerequisite.yaml
+- include: aws-prerequisite.yaml
 
 #- include: openshift-setup.yaml
