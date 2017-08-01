@@ -34,15 +34,6 @@
     osm_default_node_selector: "role=app"
     deployment_type: openshift-enterprise
     os_sdn_network_plugin_name: "{{ openshift_sdn }}"
-    openshift_master_identity_providers:
-    - name: github
-      kind: GitHubIdentityProvider
-      login: true
-      challenge: false
-      mapping_method: claim
-      clientID: "{{ github_client_id }}"
-      clientSecret: "{{ github_client_secret }}"
-      organizations: "{{ github_organization }}"
     osm_use_cockpit: true
     containerized: false
     openshift_hosted_registry_storage_kind: object
