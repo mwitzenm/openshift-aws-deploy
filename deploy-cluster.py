@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+# TODO: Remove cloudforms stack if it already exists
+
+
 import click
 import os
 import sys
