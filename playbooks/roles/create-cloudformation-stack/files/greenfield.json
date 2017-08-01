@@ -738,9 +738,7 @@
         ],
         "SecurityGroups": [{"Ref": "MasterExtElbSG"}],
         "Subnets": [
-          {"Ref": "PublicSubnet1"},
-          {"Ref": "PublicSubnet2"},
-          {"Ref": "PublicSubnet3"}
+          {"Ref": "PublicSubnet2"}
             ],
         "Instances": [
           {"Ref": "Master01"},
@@ -777,8 +775,6 @@
         ],
         "SecurityGroups": [ { "Ref": "InfraElbSG" } ],
         "Subnets": [
-          {"Ref": "PublicSubnet1"},
-          {"Ref": "PublicSubnet2"},
           {"Ref": "PublicSubnet3"}
         	],
         "Instances": [
