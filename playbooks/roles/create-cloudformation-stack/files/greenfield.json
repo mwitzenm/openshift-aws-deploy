@@ -285,7 +285,7 @@
     "BastionSg": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "bastion-sg",
+        "GroupDescription": "Bastion",
         "VpcId": { "Ref": "Vpc" },
         "Tags": [ {"Key": "Name", "Value": "bastion_sg"} ],
         "SecurityGroupIngress": [
@@ -301,7 +301,7 @@
     "EtcdSG": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupDescription": "etcd",
+        "GroupDescription": "Etcd",
         "VpcId": { "Ref": "Vpc" },
         "Tags": [ {"Key": "Name", "Value": "ose_etcd_sg"} ]
       }
@@ -436,104 +436,14 @@
         "SourceSecurityGroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] }
       }
     },
-    "InfraIngressHTTP": {
+    "MasterIntElbIngressInfra": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties":{
-        "GroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] },
+        "GroupId": { "Fn::GetAtt": [ "MasterIntElbSG", "GroupId" ] },
         "IpProtocol": "tcp",
-        "FromPort": "80",
-        "ToPort": "80",
-        "SourceSecurityGroupId": { "Fn::GetAtt": [ "InfraElbSG", "GroupId" ] }
-      }
-    },
-    "InfraIngressHTTPS": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties":{
-        "GroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] },
-        "IpProtocol": "tcp",
-        "FromPort": "443",
-        "ToPort": "443",
-        "SourceSecurityGroupId": { "Fn::GetAtt": [ "InfraElbSG", "GroupId" ] }
-      }
-    },
-    "NodeIngressMasterKubelet": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties":{
-        "GroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] },
-        "IpProtocol": "tcp",
-        "FromPort": "10250",
-        "ToPort": "10250",
-        "SourceSecurityGroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] }
-      }
-    },
-    "GlusterDaemon": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties":{
-        "GroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] },
-        "IpProtocol": "tcp",
-        "FromPort": "24007",
-        "ToPort": "24007",
-        "SourceSecurityGroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] }
-      }
-    },
-    "GlusterManagement": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties":{
-        "GroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] },
-        "IpProtocol": "tcp",
-        "FromPort": "24008",
-        "ToPort": "24008",
-        "SourceSecurityGroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] }
-      }
-    },
-    "GlusterSsh": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties":{
-        "GroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] },
-        "IpProtocol": "tcp",
-        "FromPort": "2222",
-        "ToPort": "2222",
-        "SourceSecurityGroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] }
-      }
-    },
-    "GlusterNfs": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties":{
-        "GroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] },
-        "IpProtocol": "tcp",
-        "FromPort": "49152",
-        "ToPort": "49664",
-        "SourceSecurityGroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] }
-      }
-    },
-    "NodeIngressNodeKubelet": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties":{
-        "GroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] },
-        "IpProtocol": "tcp",
-        "FromPort": "10250",
-        "ToPort": "10250",
-        "SourceSecurityGroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] }
-      }
-    },
-    "NodeIngressNodeVXLAN": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties":{
-        "GroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] },
-        "IpProtocol": "udp",
-        "FromPort": "4789",
-        "ToPort": "4789",
-        "SourceSecurityGroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] }
-      }
-    },
-    "NodeIngressSsh": {
-      "Type": "AWS::EC2::SecurityGroupIngress",
-      "Properties":{
-        "GroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] },
-        "IpProtocol": "tcp",
-        "FromPort": "22",
-        "ToPort": "22",
-        "SourceSecurityGroupId": { "Fn::GetAtt": [ "BastionSg", "GroupId" ] }
+        "FromPort": { "Ref": "MasterApiPort" },
+        "ToPort": { "Ref": "MasterApiPort" },
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] }
       }
     },
     "MasterIngressIntLB": {
@@ -556,14 +466,104 @@
         "SourceSecurityGroupId": { "Fn::GetAtt": [ "MasterExtElbSG", "GroupId" ] }
       }
     },
-    "MasterIngressNodesDNSUDP": {
+    "MasterIngressMastersDNSTCP": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] },
+        "IpProtocol": "tcp",
+        "FromPort": "8053",
+        "ToPort": "8053",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] }
+      }
+    },
+    "MasterIngressMastersDNSUDP": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties":{
         "GroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] },
         "IpProtocol": "udp",
         "FromPort": "8053",
         "ToPort": "8053",
-        "SourceSecurityGroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] }
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] }
+      }
+    },
+    "MasterIngressMastersAPITCP": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] },
+        "IpProtocol": "tcp",
+        "FromPort": { "Ref": "MasterApiPort" },
+        "ToPort": { "Ref": "MasterApiPort" },
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] }
+      }
+    },
+    "MasterIngressMasterVXLAN": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] },
+        "IpProtocol": "udp",
+        "FromPort": "4789",
+        "ToPort": "4789",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] }
+      }
+    },
+    "MasterIngressInfraDNSTCP": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] },
+        "IpProtocol": "tcp",
+        "FromPort": "8053",
+        "ToPort": "8053",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] }
+      }
+    },
+    "MasterIngressInfraDNSUDP": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] },
+        "IpProtocol": "udp",
+        "FromPort": "8053",
+        "ToPort": "8053",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] }
+      }
+    },
+    "MasterIngressInfraAPITCP": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] },
+        "IpProtocol": "tcp",
+        "FromPort": { "Ref": "MasterApiPort" },
+        "ToPort": { "Ref": "MasterApiPort" },
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] }
+      }
+    },
+    "MasterIngressInfraVXLAN": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] },
+        "IpProtocol": "udp",
+        "FromPort": "4789",
+        "ToPort": "4789",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] }
+      }
+    },
+    "MasterIngressInfraLoggingTCP": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] },
+        "IpProtocol": "tcp",
+        "FromPort": "24224",
+        "ToPort": "24224",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] }
+      }
+    },
+    "MasterIngressInfraLoggingUDP": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] },
+        "IpProtocol": "udp",
+        "FromPort": "24224",
+        "ToPort": "24224",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] }
       }
     },
     "MasterIngressNodesDNSTCP": {
@@ -571,6 +571,16 @@
       "Properties":{
         "GroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] },
         "IpProtocol": "tcp",
+        "FromPort": "8053",
+        "ToPort": "8053",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] }
+      }
+    },
+    "MasterIngressNodesDNSUDP": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] },
+        "IpProtocol": "udp",
         "FromPort": "8053",
         "ToPort": "8053",
         "SourceSecurityGroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] }
@@ -586,7 +596,17 @@
         "SourceSecurityGroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] }
       }
     },
-    "LoggingTCP": {
+    "MasterIngressNodesVXLAN": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] },
+        "IpProtocol": "udp",
+        "FromPort": "4789",
+        "ToPort": "4789",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] }
+      }
+    },
+    "MasterIngressNodesLoggingTCP": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties":{
         "GroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] },
@@ -596,7 +616,7 @@
         "SourceSecurityGroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] }
       }
     },
-    "LoggingUDP": {
+    "MasterIngressNodesLoggingUDP": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties":{
         "GroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] },
@@ -606,14 +626,134 @@
         "SourceSecurityGroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] }
       }
     },
-    "MasterIngressMastersAPITCP": {
+    "MasterIngressSsh": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties":{
         "GroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] },
         "IpProtocol": "tcp",
-        "FromPort": { "Ref": "MasterApiPort" },
-        "ToPort": { "Ref": "MasterApiPort" },
+        "FromPort": "22",
+        "ToPort": "22",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "BastionSg", "GroupId" ] }
+      }
+    },
+    "InfraIngressHTTP": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] },
+        "IpProtocol": "tcp",
+        "FromPort": "80",
+        "ToPort": "80",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "InfraElbSG", "GroupId" ] }
+      }
+    },
+    "InfraIngressHTTPS": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] },
+        "IpProtocol": "tcp",
+        "FromPort": "443",
+        "ToPort": "443",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "InfraElbSG", "GroupId" ] }
+      }
+    },
+    "InfraIngressMasterKubelet": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] },
+        "IpProtocol": "tcp",
+        "FromPort": "10250",
+        "ToPort": "10250",
         "SourceSecurityGroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] }
+      }
+    },
+    "InfraIngressMasterVXLAN": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] },
+        "IpProtocol": "udp",
+        "FromPort": "4789",
+        "ToPort": "4789",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] }
+      }
+    },
+    "InfraIngressInfraVXLAN": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] },
+        "IpProtocol": "udp",
+        "FromPort": "4789",
+        "ToPort": "4789",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] }
+      }
+    },
+    "InfraIngressNodeVXLAN": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] },
+        "IpProtocol": "udp",
+        "FromPort": "4789",
+        "ToPort": "4789",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] }
+      }
+    },
+    "InfraIngressSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "BastionSg", "GroupId" ] }
+      }
+    },
+    "NodeIngressMasterKubelet": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] },
+        "IpProtocol": "tcp",
+        "FromPort": "10250",
+        "ToPort": "10250",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] }
+      }
+    },
+    "NodeIngressMasterVXLAN": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] },
+        "IpProtocol": "udp",
+        "FromPort": "4789",
+        "ToPort": "4789",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "MasterSG", "GroupId" ] }
+      }
+    },
+    "NodeIngressInfraVXLAN": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] },
+        "IpProtocol": "udp",
+        "FromPort": "4789",
+        "ToPort": "4789",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "InfraSG", "GroupId" ] }
+      }
+    },
+    "NodeIngressNodeVXLAN": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] },
+        "IpProtocol": "udp",
+        "FromPort": "4789",
+        "ToPort": "4789",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] }
+      }
+    },
+    "NodeIngressSsh": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "GroupId": { "Fn::GetAtt": [ "NodeSG", "GroupId" ] },
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22",
+        "SourceSecurityGroupId": { "Fn::GetAtt": [ "BastionSg", "GroupId" ] }
       }
     },
     "EtcdIngressEtcd": {
