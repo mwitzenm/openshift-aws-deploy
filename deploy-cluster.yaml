@@ -1,0 +1,74 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  become: no
+  vars_files:
+  - vars/deployment-vars.yaml
+  - vars/cluster-vars.yaml
+  tasks:
+  - include: tasks/validate-prereqs.yaml
+
+  - name: Deploy EC2 keypair
+    ec2_key:
+      name: "{{ keypair }}"
+      region: "{{ region }}"
+      key_material: "{{ item }}"
+    with_file: "{{ key_path }}"
+
+  - include: tasks/create-cfn-cluster-stack.yaml
+
+  - name: Get cfn stack outputs
+    cloudformation_facts:
+      stack_name: "{{ stack_name }}"
+      region: "{{ region }}"
+    register: stack
+
+  - name: Set s3 facts
+    set_fact:
+      s3user_id: "{{ stack['ansible_facts']['cloudformation'][stack_name]['stack_outputs']['S3UserAccessId'] }}"
+      s3user_secret: "{{ stack['ansible_facts']['cloudformation'][stack_name]['stack_outputs']['S3UserSecretKey'] }}"
+      s3_bucket_name: "{{ stack['ansible_facts']['cloudformation'][stack_name]['stack_outputs']['S3Bucket'] }}"
+
+  - include: tasks/generate-host-groups
+
+  - name: Wait for bastion host to become available
+    wait_for:
+      port: 22
+      host: "bastion.{{ public_hosted_zone }}"
+      state: started
+      delay: "{{ host_up_time }}"
+
+# Set up RHEL subscription on cluster hosts
+- hosts: cluster_hosts
+  gather_facts: yes
+  become: yes
+  serial: 1
+  vars_files:
+  - vars/deploy-vars.yaml
+  tasks:
+    - include: tasks/rhsm-subscription.yaml
+
+# Enable required repos, prepare hosts for OpenShift installation
+- hosts: cluster_hosts
+  gather_facts: no
+  become: yes
+  tasks:
+  - include: tasks/configure-rhsm-repos.yaml
+  - include: tasks/configure-host-prereqs.yaml
+
+# Prepare master hosts for OpenShift installation
+- hosts: master
+  gather_facts: no
+  become: yes
+  tasks:
+  - name: Install git
+    package:
+      name: git
+      state: latest
+    when: not openshift.common.is_atomic | bool
+
+# Run cluster installation playbook
+- include: /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml
+  vars_files:
+    - vars/cluster-vars.yaml

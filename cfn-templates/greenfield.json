@@ -1356,7 +1356,7 @@
     },
     "PrivateSubnet" : {
       "Value" : { "Ref" : "PrivateSubnet" },
-      "Description" : "Private Subnet 1"
+      "Description" : "Private Subnet"
     },
     "NodeSGId" : {
       "Value" : { "Fn::GetAtt": [ "NodeSG", "GroupId" ]},

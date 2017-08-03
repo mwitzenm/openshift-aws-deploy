@@ -29,7 +29,7 @@ $ yum -y install python2-boto \
 $ git clone https://github.com/nccurry/openshift-aws-deploy.git
 ```
 
-### Modify SSH Config
+### Configure SSH for use with Bastion
 Due to the installations use of a bastion server the ssh config must be modified.
 You should replace ```*.domain.com``` and ```bastion.domain.com``` with your own domain name that is configured in Route 53 and point the config at the ssh key you intend to use.
 ```
@@ -46,8 +46,9 @@ Host bastion
      CheckHostIP                no
      ForwardAgent               yes
      IdentityFile               /path/to/ssh/key
-
 ```
+You can find more information about using an SSH bastion [here](http://blog.scottlowe.org/2015/11/21/using-ssh-bastion-host/).
+
 ### Export the EC2 Credentials
 You will need to export your EC2 credentials before attempting to use the
 scripts:
