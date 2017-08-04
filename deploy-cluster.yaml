@@ -4,7 +4,7 @@
   gather_facts: no
   become: no
   tasks:
-  - tasks/valiate-prereqs.yaml
+  - include: tasks/validate-prereqs.yaml
 
   - name: Deploy EC2 keypair
     ec2_key:
