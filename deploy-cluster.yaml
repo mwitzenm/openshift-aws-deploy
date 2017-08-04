@@ -3,11 +3,8 @@
   connection: local
   gather_facts: no
   become: no
-  vars_files:
-  - vars/deployment-vars.yaml
-  - vars/cluster-vars.yaml
   tasks:
-  - include: tasks/validate-prereqs.yaml
+  - tasks/valiate-prereqs.yaml
 
   - name: Deploy EC2 keypair
     ec2_key:
@@ -20,7 +17,7 @@
 
   - name: Get cfn stack outputs
     cloudformation_facts:
-      stack_name: "{{ stack_name }}"
+      stack_name: "{{ cfn_stack_name }}"
       region: "{{ region }}"
     register: stack
 
@@ -30,22 +27,20 @@
       s3user_secret: "{{ stack['ansible_facts']['cloudformation'][stack_name]['stack_outputs']['S3UserSecretKey'] }}"
       s3_bucket_name: "{{ stack['ansible_facts']['cloudformation'][stack_name]['stack_outputs']['S3Bucket'] }}"
 
-  - include: tasks/generate-host-groups
+  - include: tasks/generate-host-groups.yaml
 
   - name: Wait for bastion host to become available
     wait_for:
       port: 22
       host: "bastion.{{ public_hosted_zone }}"
       state: started
-      delay: "{{ host_up_time }}"
+      delay: 80
 
 # Set up RHEL subscription on cluster hosts
 - hosts: cluster_hosts
   gather_facts: yes
   become: yes
   serial: 1
-  vars_files:
-  - vars/deploy-vars.yaml
   tasks:
     - include: tasks/rhsm-subscription.yaml
 
@@ -68,7 +63,4 @@
       state: latest
     when: not openshift.common.is_atomic | bool
 
-# Run cluster installation playbook
-- include: /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml
-  vars_files:
-    - vars/cluster-vars.yaml
+- include: tasks/openshift-install.yaml

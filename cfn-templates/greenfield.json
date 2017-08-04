@@ -38,8 +38,11 @@
     "AppWildcardDomain": {
       "Type": "String"
     },
-    "SubnetCidrBlocks": {
-      "Type": "CommaDelimitedList"
+    "PrivateSubnetCidr": {
+      "Type": "String"
+    },
+    "PublicSubnetCidr": {
+      "Type": "String"
     },
     "KeyName": {
       "Type": "AWS::EC2::KeyPair::KeyName"
@@ -215,7 +218,7 @@
       "DependsOn": ["Vpc"],
       "Properties": {
         "AvailabilityZone": { "Ref" : "AvailabilityZone" },
-        "CidrBlock": {"Fn::Select": ["0", {"Ref": "SubnetCidrBlocks"}]},
+        "CidrBlock": { "Ref": "PublicSubnetCidr" },
         "Tags": [ {"Key": "Name", "Value": "Public_Subnet"} ],
         "MapPublicIpOnLaunch": "true",
         "VpcId": { "Ref": "Vpc" }
@@ -233,7 +236,7 @@
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "AvailabilityZone": { "Ref" : "AvailabilityZone" },
-        "CidrBlock": {"Fn::Select": ["1", {"Ref": "SubnetCidrBlocks"}]},
+        "CidrBlock": { "Ref": "PrivateSubnetCidr" },
         "Tags": [ {"Key": "Name", "Value": "Private_Subnet"} ],
         "VpcId": { "Ref": "Vpc" }
       }

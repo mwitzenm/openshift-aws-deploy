@@ -1,0 +1,82 @@
+---
+# Run cluster installation playbook
+- include: /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml
+  vars:
+    # Deployment
+    deployment_type: "openshift-enterprise"
+    openshift_cloudprovider_kind: "aws"
+    ansible_ssh_user: "ec2-user"
+    ansible_become: "yes"
+    debug_level: 2
+
+    # Cluster
+    containerized: false
+    osm_use_cockpit: true
+    openshift_master_cluster_hostname: "{{ openshift_master_cluster_hostname }}"
+    openshift_master_cluster_public_hostname: "{{ openshift_master_cluster_public_hostname }}"
+    openshift_master_cluster_method: "native"
+    openshift_master_api_port: "{{ openshift_master_api_port }}"
+    openshift_master_console_port: "{{ openshift_master_api_port }}"
+    openshift_master_default_subdomain: "{{ openshift_master_default_subdomain }}"
+    osm_default_node_selector: "role=app"
+    #openshift_master_identity_providers:
+    #openshift_master_named_certificates:
+    #openshift_master_overwrite_named_certificates: true
+
+    # Networking
+    os_sdn_network_plugin_name: "redhat/openshift-ovs-multitenant"
+    openshift_portal_net: "172.30.0.0/16"
+    osm_cluster_network_cidr: "10.128.0.0/14"
+
+    # Docker registries
+    #openshift_docker_additional_registries:
+    #openshift_docker_insecure_registries:
+    #openshift_docker_blocked_registries:
+
+    # Master Configuration
+    osm_controller_args:
+      cloud-provider:
+      - "aws"
+    osm_api_server_args:
+      cloud-provider:
+      - "aws"
+    openshift_node_kubelet_args:
+      cloud-provider:
+      - "aws"
+      node-labels:
+      - "role=app"
+
+    # Router
+    openshift_hosted_router_replicas: 3
+    openshift_router_selector: "role=infra"
+    #openshift_hosted_router_certificate:
+
+    # Registry
+    openshift_registry_selector: "role=infra"
+    openshift_hosted_registry_replicas: 3
+    openshift_hosted_registry_storage_kind: object
+    openshift_hosted_registry_storage_provider: s3
+    openshift_hosted_registry_storage_s3_accesskey: "{{ hostvars['localhost']['s3user_id'] }}"
+    openshift_hosted_registry_storage_s3_secretkey: "{{ hostvars['localhost']['s3user_secret'] }}"
+    openshift_hosted_registry_storage_s3_bucket: "{{ hostvars['localhost']['s3_bucket_name'] }}"
+    openshift_hosted_registry_storage_s3_region: "{{ hostvars['localhost']['region'] }}"
+    openshift_hosted_registry_storage_s3_chunksize: 26214400
+    openshift_hosted_registry_storage_s3_rootdirectory: /registry
+    openshift_hosted_registry_pullthrough: true
+    openshift_hosted_registry_acceptschema2: true
+    openshift_hosted_registry_enforcequota: true
+
+    # Metrics
+    #openshift_hosted_metrics_storage_kind: dynamic
+    #openshift_hosted_metrics_storage_volume_size: "{{ openshift_hosted_metrics_storage_volume_size }}"
+    #openshift_metrics_hawkular_nodeselector: {"role":"infra"}
+    #openshift_metrics_cassandra_nodeselector: {"role":"infra"}
+    #openshift_metrics_heapster_nodeselector: {"role":"infra"}
+
+    # Logging
+    #openshift_logging_es_pvc_dynamic: true
+    #openshift_logging_es_pvc_size: "{{ openshift_hosted_logging_storage_volume_size }}"
+    #openshift_logging_es_cluster_size: 3
+    #openshift_logging_es_nodeselector: {"role":"infra"}
+    #openshift_logging_kibana_nodeselector: {"role":"infra"}
+    #openshift_logging_curator_nodeselector: {"role":"infra"}
