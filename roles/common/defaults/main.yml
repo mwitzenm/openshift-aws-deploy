@@ -1,0 +1,6 @@
+---
+openshift_cluster_node_labels:
+  app:
+    role: app
+  infra:
+    role: infra

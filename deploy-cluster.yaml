@@ -23,9 +23,9 @@
 
   - name: Set s3 facts
     set_fact:
-      s3user_id: "{{ stack['ansible_facts']['cloudformation'][stack_name]['stack_outputs']['S3UserAccessId'] }}"
-      s3user_secret: "{{ stack['ansible_facts']['cloudformation'][stack_name]['stack_outputs']['S3UserSecretKey'] }}"
-      s3_bucket_name: "{{ stack['ansible_facts']['cloudformation'][stack_name]['stack_outputs']['S3Bucket'] }}"
+      s3user_id: "{{ stack['ansible_facts']['cloudformation'][cfn_stack_name]['stack_outputs']['S3UserAccessId'] }}"
+      s3user_secret: "{{ stack['ansible_facts']['cloudformation'][cfn_stack_name]['stack_outputs']['S3UserSecretKey'] }}"
+      s3_bucket_name: "{{ stack['ansible_facts']['cloudformation'][cfn_stack_name]['stack_outputs']['S3Bucket'] }}"
 
   - include: tasks/generate-host-groups.yaml
 
@@ -63,4 +63,5 @@
       state: latest
     when: not openshift.common.is_atomic | bool
 
+# Run OpenShift installation playbook
 - include: tasks/openshift-install.yaml

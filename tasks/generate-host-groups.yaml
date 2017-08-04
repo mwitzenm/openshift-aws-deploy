@@ -3,8 +3,6 @@
   add_host:
     name: "bastion.{{ public_hosted_zone }}"
     groups: bastion
-  when:
-    - byo_bastion == "no"
 
 - name: Add masters to requisite groups
   add_host:

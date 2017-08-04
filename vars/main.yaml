@@ -20,7 +20,6 @@ docker_storage: "25"
 etcd_storage: "25"
 emptydir_storage: "50"
 
-
 # Red Hat Subscription Management
 rhsm_user: ""
 rhsm_password: ""
