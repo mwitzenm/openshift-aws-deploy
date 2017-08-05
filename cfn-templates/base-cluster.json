@@ -862,7 +862,7 @@
 			"TTL": "300",
 		    "ResourceRecords": [{ "Fn::GetAtt" : ["InfraNode02", "PrivateIp"] }]
           },
-	  {
+	      {
             "Name": {"Fn::Join": [".", ["ose-infra-node03",{"Ref": "Route53HostedZone"}]]},
             "Type": "A",
 			"TTL": "300",

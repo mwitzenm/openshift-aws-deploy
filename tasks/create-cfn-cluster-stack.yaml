@@ -4,7 +4,7 @@
     stack_name: "{{ cfn_stack_name }}"
     state: "present"
     region: "{{ region }}"
-    template: "cfn-templates/greenfield.json"
+    template: "cfn-templates/base-cluster.json"
     template_parameters:
       AvailabilityZone: "{{ availability_zone }}"
       Route53HostedZone: "{{ public_hosted_zone }}."
@@ -50,3 +50,4 @@
       S3User: "{{ s3_registry_user }}"
     tags:
       KubernetesCluster: "{{ cfn_stack_name }}"
+  when: deployment_type == "cluster"

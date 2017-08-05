@@ -12,6 +12,7 @@
       region: "{{ region }}"
       key_material: "{{ item }}"
     with_file: "{{ key_path }}"
+    when: deployment_type == "cluster"
 
   - include: tasks/create-cfn-cluster-stack.yaml
 
