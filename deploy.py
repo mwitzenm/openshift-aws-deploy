@@ -9,7 +9,7 @@ from typing import Dict, Tuple
 from boto.cloudformation import CloudFormationConnection, connect_to_region
 
 @click.command()
-@click.option('--deployment_type',
+@click.option('--deploy-type',
               default='cluster',
               type=click.Choice(['cluster', 'infra-node', 'app-node']),
               help='Are you deploying a new cluster or adding a new node?',
@@ -21,9 +21,9 @@ from boto.cloudformation import CloudFormationConnection, connect_to_region
               help='Adding this flag will delete the known hosts file at ~/.ssh/known_hosts')
 @click.help_option('--help', '-h')
 @click.option('-v', '--verbose', count=True)
-def launch(deployment_type=None, stack_arn=None, clear_known_hosts=None, verbose=None):
+def launch(deploy_type=None, stack_arn=None, clear_known_hosts=None, verbose=None):
     # Prompt for CloudFormation stack ARN if adding a node to a cluster
-    if deployment_type in ['infra-node', 'app-node'] and stack_arn is None:
+    if deploy_type in ['infra-node', 'app-node'] and stack_arn is None:
         stack_arn = click.prompt("Please enter the CloudFormation stack ARN of the cluster you wish to scale up.")
 
     # Clear known_hosts file between cluster deployments
@@ -34,10 +34,10 @@ def launch(deployment_type=None, stack_arn=None, clear_known_hosts=None, verbose
             os.system("rm -rf " + known_hosts_path)
 
     # Generate new CloudFormation template if adding new node
-    if deployment_type in ['infra-node', 'app-node']:
+    if deploy_type in ['infra-node', 'app-node']:
         cfn_conn = get_cfn_conn()
         curr_template = get_cfn_template(cfn_conn, stack_arn)
-        next_node_name, next_ec2_name = generate_new_node_keys(deployment_type, curr_template)
+        next_node_name, next_ec2_name = generate_new_node_keys(deploy_type, curr_template)
         new_template = generate_new_cfn_template(next_node_name, next_ec2_name, curr_template)
         new_template_json = json.dumps(new_template)
         validate_cfn_template(cfn_conn, new_template_json)
@@ -52,7 +52,7 @@ def launch(deployment_type=None, stack_arn=None, clear_known_hosts=None, verbose
         os.system('rm -rf .ansible')
 
     # Run playbook
-    status = os.system('ansible-playbook deploy-cluster.yaml --extra-vars "@vars/main.yaml" -e "deployment_type=%s"' % deployment_type)
+    status = os.system('ansible-playbook deploy-cluster.yaml --extra-vars "@vars/main.yaml" -e "deploy_type=%s"' % deploy_type)
     if os.WIFEXITED(status) and os.WEXITSTATUS(status) != 0:
         sys.exit(os.WEXITSTATUS(status))
 
