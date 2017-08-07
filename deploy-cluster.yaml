@@ -34,7 +34,7 @@
       s3_bucket_name: "{{ stack['ansible_facts']['cloudformation'][cfn_stack_name]['stack_outputs']['S3Bucket'] }}"
 
   - name: Refresh dynamic inventory cache
-    command: "{{ inventory_dir }}ec2.py --refresh-cache"
+    command: "{{ inventory_dir }}/ec2.py --refresh-cache"
 
   - name: Refresh in-memory dynamic inventory cache
     meta: refresh_inventory

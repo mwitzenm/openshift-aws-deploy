@@ -28,7 +28,9 @@ def launch(deployment_type=None, stack_arn=None, clear_known_hosts=None, verbose
 
     # Clear known_hosts file between cluster deployments
     if clear_known_hosts is True:
-        os.system("rm -rf ~/.ssh/known_hosts")
+        if os.path.isfile('~/.ssh/known_hosts'):
+            print "Clearing known_hosts file at ~/.ssh/known_hosts"
+            os.system("rm -rf ~/.ssh/known_hosts")
 
     # Generate new CloudFormation template if adding new node
     if deployment_type in ['infra-node', 'app-node']:
@@ -40,10 +42,13 @@ def launch(deployment_type=None, stack_arn=None, clear_known_hosts=None, verbose
         validate_cfn_template(cfn_conn, new_template_json)
 
     # Clear dynamic inventory cache
+    print "Refreshing dynamic inventory cache"
     os.system('inventory/aws/hosts/ec2.py --refresh-cache > /dev/null')
 
     # Remove cached ansible facts
-    os.system('rm -rf .ansible/cached_facts')
+    if os.path.isdir('.ansible'):
+        print "Removing cached ansible facts"
+        os.system('rm -rf .ansible')
 
     # Run playbook
     status = os.system('ansible-playbook deploy-cluster.yaml --extra-vars "@vars/main.yaml" -e "deployment_type=%s"' % deployment_type)
