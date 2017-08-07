@@ -16,6 +16,11 @@
 
   - include: tasks/create-cfn-cluster-stack.yaml
 
+- hosts: localhost
+  connection: local
+  gather_facts: yes
+  become: no
+  tasks:
   - name: Get cfn stack outputs
     cloudformation_facts:
       stack_name: "{{ cfn_stack_name }}"
@@ -30,6 +35,11 @@
 
   - include: tasks/generate-host-groups.yaml
 
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  become: no
+  tasks:
   - name: Wait for bastion host to become available
     wait_for:
       port: 22

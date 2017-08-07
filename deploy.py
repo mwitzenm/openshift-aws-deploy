@@ -16,12 +16,17 @@ from boto.cloudformation import CloudFormationConnection, connect_to_region
               show_default=True)
 @click.option('--stack_arn',
               help='If adding a new cluster node, the ARN of the existing CloudFormation stack is required.')
+@click.option('--clear_known_hosts',
+              is_flag=True,
+              help='Adding this flag will delete the known hosts file at ~/.ssh/known_hosts')
 @click.help_option('--help', '-h')
 @click.option('-v', '--verbose', count=True)
 def launch(deployment_type=None, stack_arn=None, verbose=None):
     # Prompt for CloudFormation stack ARN if adding a node to a cluster
     if deployment_type in ['infra-node', 'app-node'] and stack_arn is None:
         stack_arn = click.prompt("Please enter the CloudFormation stack ARN of the cluster you wish to scale up.")
+
+    # TODO: Add logic to clean known_hosts
 
     # Generate new CloudFormation template if adding new node
     if deployment_type in ['infra-node', 'app-node']:
@@ -39,7 +44,7 @@ def launch(deployment_type=None, stack_arn=None, verbose=None):
     os.system('rm -rf .ansible/cached_facts')
 
     # Run playbook
-    status = os.system('ansible-playbook deploy-cluster.yaml --extra-vars "@vars/main.yaml deployment_type=%s"' % deployment_type)
+    status = os.system('ansible-playbook deploy-cluster.yaml --extra-vars "@vars/main.yaml" -e "deployment_type=%s"' % deployment_type)
     if os.WIFEXITED(status) and os.WEXITSTATUS(status) != 0:
         sys.exit(os.WEXITSTATUS(status))
 
