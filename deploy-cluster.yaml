@@ -33,6 +33,12 @@
       s3user_secret: "{{ stack['ansible_facts']['cloudformation'][cfn_stack_name]['stack_outputs']['S3UserSecretKey'] }}"
       s3_bucket_name: "{{ stack['ansible_facts']['cloudformation'][cfn_stack_name]['stack_outputs']['S3Bucket'] }}"
 
+  - name: Refresh dynamic inventory cache
+    command: "{{ inventory_dir }}ec2.py --refresh-cache"
+
+  - name: Refresh in-memory dynamic inventory cache
+    meta: refresh_inventory
+
   - include: tasks/generate-host-groups.yaml
 
 - hosts: localhost
