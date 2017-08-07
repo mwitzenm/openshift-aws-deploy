@@ -28,9 +28,10 @@ def launch(deployment_type=None, stack_arn=None, clear_known_hosts=None, verbose
 
     # Clear known_hosts file between cluster deployments
     if clear_known_hosts is True:
-        if os.path.isfile('~/.ssh/known_hosts'):
+        known_hosts_path = os.path.expanduser('~/.ssh/known_hosts')
+        if os.path.isfile(known_hosts_path):
             print "Clearing known_hosts file at ~/.ssh/known_hosts"
-            os.system("rm -rf ~/.ssh/known_hosts")
+            os.system("rm -rf " + known_hosts_path)
 
     # Generate new CloudFormation template if adding new node
     if deployment_type in ['infra-node', 'app-node']:

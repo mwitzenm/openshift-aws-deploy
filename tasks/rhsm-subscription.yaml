@@ -34,7 +34,7 @@
       when: "'Current' not in subscribed.stdout and rhsm_user is defined and rhsm_user"
 
     - debug:
-      var: result
+        var: result
 
     - name: Retrieve the OpenShift Pool ID
       command: subscription-manager list --available --matches="{{ rhsm_pool }}" --pool-only
