@@ -77,14 +77,14 @@ def launch(deploy_type=None, multi_az=None, stack_arn=None, clear_known_hosts=No
 
 def get_cfn_conn():
     # type: () -> CloudFormationConnection
-    """Creates CloudFormation connection object using region data in vars/main.yaml"""
+    """Creates CloudFormation connection object using region data in playbooks/vars/main.yaml"""
 
     # Open vars/main.yaml. Used to get AWS region
-    with open('vars/main.yaml', mode='r') as f:
+    with open('playbooks/vars/main.yaml', mode='r') as f:
         try:
             vars = yaml.load(f)
         except yaml.YAMLError as e:
-            print("There was a problem loading 'vars/main.yaml. \n%s" % e.message)
+            print("There was a problem loading 'playbooks/vars/main.yaml. \n%s" % e.message)
             exit(1)
 
     # Get CloudFormation connection
