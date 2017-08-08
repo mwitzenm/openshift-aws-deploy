@@ -52,6 +52,7 @@
       host: "bastion.{{ public_hosted_zone }}"
       state: started
       delay: 80
+    when: deploy_type == "cluster"
 
 # Set up RHEL subscription on cluster hosts
 - hosts: cluster_hosts
@@ -59,8 +60,8 @@
   become: yes
   serial: 1
   tasks:
-    - include: tasks/rhsm-subscription.yaml
-  when: deploy_type == "cluster"
+  - include: tasks/rhsm-subscription.yaml
+    when: deploy_type == "cluster"
 
 # Set up RHEL subscription just on new nodes
 - hosts: new_node
@@ -68,8 +69,8 @@
   become: yes
   serial: 1
   tasks:
-    - include: tasks/rhsm-subscription.yaml
-  when: deploy_type == "infra-node" or deploy_type == "app-node"
+  - include: tasks/rhsm-subscription.yaml
+    when: deploy_type == "infra-node" or deploy_type == "app-node"
 
 # Enable required repos, prepare hosts for OpenShift installation
 - hosts: cluster_hosts
@@ -77,8 +78,9 @@
   become: yes
   tasks:
   - include: tasks/configure-rhsm-repos.yaml
+    when: deploy_type == "cluster"
   - include: tasks/configure-host-prereqs.yaml
-  when: deploy_type == "cluster"
+    when: deploy_type == "cluster"
 
 # Enable required repos, prepare just new node for OpenShift installation
 - hosts: new_node
@@ -86,8 +88,10 @@
   become: yes
   tasks:
   - include: tasks/configure-rhsm-repos.yaml
+    when: deploy_type == "infra-node" or deploy_type == "app-node"
   - include: tasks/configure-host-prereqs.yaml
-  when: deploy_type == "infra-node" or deploy_type == "app-node"
+    when: deploy_type == "infra-node" or deploy_type == "app-node"
+
 
 # Prepare master hosts for OpenShift installation
 - hosts: master
@@ -98,8 +102,7 @@
     package:
       name: git
       state: latest
-    when: not openshift.common.is_atomic | bool
-  when: deploy_type == "cluster"
+    when: deploy_type == "cluster" and not openshift.common.is_atomic | bool
 
 # Run OpenShift installation playbook
 - include: tasks/openshift-install.yaml
