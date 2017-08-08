@@ -84,7 +84,7 @@ At a minimum you will need to add values for the following:
 #### Cluster parameters
 You may also want to modify the parameters for the OpenShift cluster installation. Typically this is done via an [ansible hosts](https://docs.openshift.com/container-platform/3.5/install_config/install/advanced_install.html) file.
 
-However this installation method automatically moves from AWS infrastructure deployment to cluster installation. If you wish to modify cluster parameters the values are passed to the official OpenShift ansible playbook in the following file [tasks/openshift-install.yaml](tasks/openshift-install.yaml)
+However this installation method automatically moves from AWS infrastructure deployment to cluster installation. If you wish to modify cluster parameters the values are passed to the official OpenShift ansible playbook in the following file [tasks/openshift-install.yaml](playbooks/tasks/openshift-install.yaml)
 
 ## Deploy Cluster
 ```shell

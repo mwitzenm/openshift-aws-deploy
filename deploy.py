@@ -65,13 +65,14 @@ def launch(deploy_type=None, multi_az=None, stack_arn=None, clear_known_hosts=No
     # Run playbook
     status = os.system(
         'ansible-playbook playbooks/deploy.yaml \
-        --extra-vars "@vars/main.yaml" \
+        --extra-vars "@playbooks/vars/main.yaml" \
         -e "deploy_type=%s multi_az=%s next_ec2_name=%s new_template_file=%s"'
        % (deploy_type, multi_az, next_ec2_name, new_template_file)
     )
 
     if os.WIFEXITED(status) and os.WEXITSTATUS(status) != 0:
         sys.exit(os.WEXITSTATUS(status))
+
 
 
 def get_cfn_conn():
