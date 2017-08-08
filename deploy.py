@@ -29,7 +29,7 @@ from boto.cloudformation import CloudFormationConnection, connect_to_region
 def launch(deploy_type=None, multi_az=None, stack_arn=None, clear_known_hosts=None, verbose=None):
     # Prompt for CloudFormation stack ARN if adding a node to a cluster
     if deploy_type in ['infra-node', 'app-node'] and stack_arn is None:
-        stack_arn = click.prompt("Please enter the CloudFormation stack ARN of the cluster you wish to scale up.")
+        stack_arn = click.prompt("Please enter the CloudFormation stack ARN of the cluster you wish to scale up")
 
     # Clear known_hosts file between cluster deployments
     if clear_known_hosts is True:
@@ -47,9 +47,11 @@ def launch(deploy_type=None, multi_az=None, stack_arn=None, clear_known_hosts=No
         new_template_json = json.dumps(new_template)
         validate_cfn_template(cfn_conn, new_template_json)
 
+        # Save new CloudFormation template to file
         cur_time = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H:%M:%S')
-        with open('cfn-templates/scaled-cluster-' + cur_time + '.json') as f:
-            json.dump(new_template_json, f)
+        new_template_file = 'cfn-templates/scaled-cluster-' + cur_time + '.json'
+        with open(new_template_file, 'w') as f:
+            json.dump(new_template, f)
 
     # Clear dynamic inventory cache
     print "Refreshing dynamic inventory cache"
@@ -64,8 +66,8 @@ def launch(deploy_type=None, multi_az=None, stack_arn=None, clear_known_hosts=No
     status = os.system(
         'ansible-playbook playbooks/deploy.yaml \
         --extra-vars "@vars/main.yaml" \
-        -e "deploy_type=%s multi_az=%s"'
-       % (deploy_type, multi_az)
+        -e "deploy_type=%s multi_az=%s next_ec2_name=%s new_template_file=%s"'
+       % (deploy_type, multi_az, next_ec2_name, new_template_file)
     )
 
     if os.WIFEXITED(status) and os.WEXITSTATUS(status) != 0:

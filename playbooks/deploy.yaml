@@ -60,6 +60,16 @@
   serial: 1
   tasks:
     - include: tasks/rhsm-subscription.yaml
+  when: deploy_type == "cluster"
+
+# Set up RHEL subscription just on new nodes
+- hosts: new_node
+  gather_facts: yes
+  become: yes
+  serial: 1
+  tasks:
+    - include: tasks/rhsm-subscription.yaml
+  when: deploy_type == "infra-node" or deploy_type == "app-node"
 
 # Enable required repos, prepare hosts for OpenShift installation
 - hosts: cluster_hosts
@@ -68,6 +78,16 @@
   tasks:
   - include: tasks/configure-rhsm-repos.yaml
   - include: tasks/configure-host-prereqs.yaml
+  when: deploy_type == "cluster"
+
+# Enable required repos, prepare just new node for OpenShift installation
+- hosts: new_node
+  gather_facts: no
+  become: yes
+  tasks:
+  - include: tasks/configure-rhsm-repos.yaml
+  - include: tasks/configure-host-prereqs.yaml
+  when: deploy_type == "infra-node" or deploy_type == "app-node"
 
 # Prepare master hosts for OpenShift installation
 - hosts: master
@@ -79,6 +99,7 @@
       name: git
       state: latest
     when: not openshift.common.is_atomic | bool
+  when: deploy_type == "cluster"
 
 # Run OpenShift installation playbook
 - include: tasks/openshift-install.yaml

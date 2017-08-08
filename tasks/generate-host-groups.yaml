@@ -15,15 +15,6 @@
   when:
     - hostvars[item]['ec2_tag_KubernetesCluster'] == cfn_stack_name
 
-- name: Add a master to the single master group
-  add_host:
-    name: "{{ item }}"
-    groups: single_master
-    openshift_node_labels:
-      role: master
-      KubernetesCluster: "{{ cfn_stack_name }}"
-  with_items: "{{ groups['masters'].0 }}"
-
 - name: Add infra instances to host group
   add_host:
     name: "{{ hostvars[item].ec2_tag_Name }}"
@@ -46,13 +37,9 @@
   when:
     - hostvars[item]['ec2_tag_KubernetesCluster'] == cfn_stack_name
 
-- name: Add new node instances to host group
+# This is used to only run node setup on new nodes
+- name: Add new node instance to host group
   add_host:
     name: "{{ hostvars[item].ec2_tag_Name }}"
-    groups: new_nodes
-    openshift_node_labels:
-      role: "{{ node_type }}"
-      KubernetesCluster: "{{ cfn_stack_name }}"
-  with_items: "{{ groups.tag_provision_node | default([]) }}"
-  when:
-    - new_node_stack is defined and node_type != "gluster" and hostvars[item]['ec2_tag_aws_cloudformation_stack_name'] == new_node_stack and add_node is defined and add_node == "yes"
+    groups: new_node
+  with_items: "{{ next_ec2_name }}.{{ public_hosted_zone }}"
