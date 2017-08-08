@@ -88,5 +88,8 @@ However this installation method automatically moves from AWS infrastructure dep
 
 ## Deploy Cluster
 ```shell
-$ ansible-playbook deploy-cluster.yaml --extra-vars "@vars/main.yaml"
+$ ./deploy.py --deploy_type cluster --clear_known_hosts
 ```
+
+## To Do:
+- Write logic to scale up nodes

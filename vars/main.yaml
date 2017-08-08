@@ -1,7 +1,6 @@
 # AWS
 cfn_stack_name: "ocp-test"
 region: "us-east-1"
-availability_zone: "us-east-1a"
 ami: ""
 public_hosted_zone: ""
 master_instance_type: "t2.large"
@@ -14,11 +13,23 @@ keypair: "{{ cfn_stack_name }}-keypair"
 key_path: "~/.ssh/id_rsa.pub"
 vpc_name: "ocp-vpc-{{ cfn_stack_name }}"
 vpc_cidr_block: "10.20.0.0/16"
-private_subnet_cidr: "10.20.1.0/24"
-public_subnet_cidr: "10.20.2.0/24"
 docker_storage: "25"
 etcd_storage: "25"
 emptydir_storage: "50"
+
+# Single AZ Deployment (Not used if --multi_az flag is set)
+availability_zone: "us-east-1a"
+private_subnet_cidr: "10.20.1.0/24"
+public_subnet_cidr: "10.20.2.0/24"
+
+# Multi AZ Deployment (Only used if --multi_az flag is set)
+subnet_cidr_blocks:
+  - "10.20.1.0/24"
+  - "10.20.2.0/24"
+  - "10.20.3.0/24"
+  - "10.20.4.0/24"
+  - "10.20.5.0/24"
+  - "10.20.6.0/24"
 
 # Red Hat Subscription Management
 rhsm_user: ""

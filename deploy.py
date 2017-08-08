@@ -5,15 +5,19 @@ import os
 import sys
 import yaml
 import json
+import time
 from typing import Dict, Tuple
 from boto.cloudformation import CloudFormationConnection, connect_to_region
 
 @click.command()
-@click.option('--deploy-type',
+@click.option('--deploy_type',
               default='cluster',
               type=click.Choice(['cluster', 'infra-node', 'app-node']),
               help='Are you deploying a new cluster or adding a new node?',
               show_default=True)
+@click.option('--multi_az',
+              is_flag=True,
+              help='Adding this flag will spread the cluster across 3 availability zones in the specified region.')
 @click.option('--stack_arn',
               help='If adding a new cluster node, the ARN of the existing CloudFormation stack is required.')
 @click.option('--clear_known_hosts',
@@ -21,7 +25,7 @@ from boto.cloudformation import CloudFormationConnection, connect_to_region
               help='Adding this flag will delete the known hosts file at ~/.ssh/known_hosts')
 @click.help_option('--help', '-h')
 @click.option('-v', '--verbose', count=True)
-def launch(deploy_type=None, stack_arn=None, clear_known_hosts=None, verbose=None):
+def launch(deploy_type=None, multi_az=None, stack_arn=None, clear_known_hosts=None, verbose=None):
     # Prompt for CloudFormation stack ARN if adding a node to a cluster
     if deploy_type in ['infra-node', 'app-node'] and stack_arn is None:
         stack_arn = click.prompt("Please enter the CloudFormation stack ARN of the cluster you wish to scale up.")
@@ -41,6 +45,8 @@ def launch(deploy_type=None, stack_arn=None, clear_known_hosts=None, verbose=Non
         new_template = generate_new_cfn_template(next_node_name, next_ec2_name, curr_template)
         new_template_json = json.dumps(new_template)
         validate_cfn_template(cfn_conn, new_template_json)
+        with open('scaled-cluster-' + time.time() + '.json') as f:
+            json.dump(new_template_json, f)
 
     # Clear dynamic inventory cache
     print "Refreshing dynamic inventory cache"
@@ -52,7 +58,13 @@ def launch(deploy_type=None, stack_arn=None, clear_known_hosts=None, verbose=Non
         os.system('rm -rf .ansible')
 
     # Run playbook
-    status = os.system('ansible-playbook deploy-cluster.yaml --extra-vars "@vars/main.yaml" -e "deploy_type=%s"' % deploy_type)
+    status = os.system(
+        'ansible-playbook playbooks/deploy.yaml \
+        --extra-vars "@vars/main.yaml" \
+        -e "deploy_type=%s multi_az=%s"'
+       % (deploy_type, multi_az)
+    )
+
     if os.WIFEXITED(status) and os.WEXITSTATUS(status) != 0:
         sys.exit(os.WEXITSTATUS(status))
 

@@ -3,7 +3,7 @@
 - include: /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml
   vars:
     # Deployment
-    deployment_type: openshift-enterprise
+    deployment_type: "openshift-enterprise"
     openshift_cloudprovider_kind: "aws"
     debug_level: 2
 
