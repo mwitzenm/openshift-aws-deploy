@@ -6,6 +6,7 @@ import sys
 import yaml
 import json
 import time
+import datetime
 from typing import Dict, Tuple
 from boto.cloudformation import CloudFormationConnection, connect_to_region
 
@@ -45,7 +46,9 @@ def launch(deploy_type=None, multi_az=None, stack_arn=None, clear_known_hosts=No
         new_template = generate_new_cfn_template(next_node_name, next_ec2_name, curr_template)
         new_template_json = json.dumps(new_template)
         validate_cfn_template(cfn_conn, new_template_json)
-        with open('cfn-templates/scaled-cluster-' + time.time() + '.json') as f:
+
+        cur_time = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H:%M:%S')
+        with open('cfn-templates/scaled-cluster-' + cur_time + '.json') as f:
             json.dump(new_template_json, f)
 
     # Clear dynamic inventory cache
